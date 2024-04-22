@@ -11,16 +11,16 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    mobile: {
+    phone: {
       type: Number,
       require: true,
     },
     password: {
-      type: Number,
+      type: String,
       require: true,
     },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
 
-module.exports = mongoose.Model("User", userSchema);
+module.exports = mongoose.model("User", userSchema);
