@@ -52,6 +52,7 @@ const jobSchema = new mongoose.Schema(
     },
     creater: {
       type: mongoose.ObjectId,
+      required:true,
     },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }

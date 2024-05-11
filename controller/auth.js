@@ -47,7 +47,7 @@ const loginController = async (req, res, next) => {
     });
     res
       .status(200)
-      .send({ message: "Login successfully", token, name: user.name });
+      .send({ message: "Login successfully", token, name: user.name,userId:user._id });
   } catch (error) {
     next(error);
   }

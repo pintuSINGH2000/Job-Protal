@@ -3,12 +3,16 @@ const connectDB = require("./config/db");
 const dotenv = require("dotenv");
 const authRoute = require("./routes/auth");
 const jobRoute = require("./routes/job");
+const morgan = require("morgan");
+const cors = require("cors");
 
 dotenv.config();
 
 connectDB();
 
 const app = express();
+
+
 
 app.get("/health", (req, res) => {
   console.log("I am in health api");
@@ -20,6 +24,8 @@ app.get("/health", (req, res) => {
 });
 
 // middleware
+app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
 
 //routes

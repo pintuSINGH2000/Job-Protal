@@ -52,7 +52,7 @@ const createJobController = async (req, res, next) => {
       creater: userId,
     });
     await job.save();
-    res.status(200).send({ message: "Job created Successfully" });
+    res.status(201).send({ job: job._id, message: "Job created Successfully" });
   } catch (error) {
     next(error);
   }
@@ -117,7 +117,7 @@ const updateJobController = async (req, res, next) => {
     if (!job) {
       return res.status(400).send({ errorMessage: "Bad request" });
     }
-    res.status(200).send({ message: "Job updated Successfully" });
+    res.status(200).send({ job: jobId, message: "Job updated Successfully" });
   } catch (error) {
     next(error);
   }
@@ -126,7 +126,7 @@ const updateJobController = async (req, res, next) => {
 // get job by id
 const JobDetailByIdController = async (req, res, next) => {
   try {
-    const jobId = req.params.jobId;
+    const { jobId, userId } = req.params;
     if (!jobId) {
       return res.status(400).send({ errorMessage: "Bad request" });
     }
@@ -134,7 +134,11 @@ const JobDetailByIdController = async (req, res, next) => {
     if (!job) {
       return res.status(400).send({ errorMessage: "Bad request" });
     }
-    return res.status(200).send(job);
+    let isEditable = false;
+    if (userId === job.creater.toString()) {
+      isEditable = true;
+    }
+    return res.status(200).send({ job, isEditable: isEditable });
   } catch (error) {
     next(error);
   }
@@ -144,27 +148,28 @@ const JobDetailByIdController = async (req, res, next) => {
 
 const getAllJobController = async (req, res, next) => {
   try {
-    const query = req.query.search || "";
-    const skill = req.query.skill;
+    const title = req.query.title || "";
+    const skill = req.query.skills || "";
+    const userId = req.params.userId;
+
     let filterSkill;
     let filterQuery = {};
     let jobList;
-    if (!query && (!skill || skill.length == 0)) {
-      jobList = await Job.find();
-    } else {
-      if (skill && skill.length > 0) {
-        filterSkill = skill.split(",");
-        const caseInsensitiveFilterSkill = filterSkill.map(
-          (skill) => new RegExp(element, "i")
-        );
-        filterSkill = caseInsensitiveFilterSkill;
-        filterQuery = { skills: { $in: filterSkill } };
-      }
-      jobList = await Job.find({
-        title: { $regex: query, $options: "i" },
-        ...filterQuery,
-      });
+    if (skill && skill.length > 0) {
+      filterSkill = skill.split(",");
+      const caseInsensitiveFilterSkill = filterSkill.map(
+        (element) => new RegExp(element, "i")
+      );
+      filterSkill = { skills: { $in: caseInsensitiveFilterSkill } };
     }
+    jobList = await Job.find({
+      jobPosition: { $regex: title, $options: "i" },
+      ...filterSkill,
+    });
+    jobList = jobList.map(job => ({
+      ...job._doc,
+      isEditable: job._doc.creater.toString() === userId,
+    }));
     return res.status(200).send(jobList);
   } catch (error) {
     next(error);
